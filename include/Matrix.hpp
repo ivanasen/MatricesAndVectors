@@ -5,76 +5,88 @@
 #include <initializer_list>
 #include <memory>
 #include <type_traits>
-
+#include <utility>
+#include "Array2DWrapper.hpp"
 
 namespace matrices {
 
-	template<class T, unsigned int Height, unsigned int Width>
-	class Matrix {
-	private:
-		std::vector<T> m_values;
-		std::vector<int> m_shape;
+	template<class T, unsigned int H, unsigned int W>
+	class Matrix : public Array2DWrapper<T, H, W> {
 	public:
-		Matrix(const std::initializer_list<T> &values) : m_values(values) {
+		Matrix(const std::initializer_list<std::vector<T>> &values) : Array2DWrapper<T, H, W>(values) {
 		}
 
-		explicit Matrix(const std::vector<T> &values) : m_values(values) {
+		explicit Matrix(const std::vector<std::vector<T>> &values) : Array2DWrapper<T, H, W>(values) {
 		}
 
-		Matrix(const Matrix &source) : m_values(source.getRawValues()) {
+		Matrix(const Matrix &source) : Array2DWrapper<T, H, W>(source) {
 		}
 
-		const std::vector<T> &getRawValues() const {
-			return m_values;
-		}
+		Matrix add(Matrix<T, H, W> &other) {
+			std::vector<std::vector<T>> sumMatrix = this->m_array;
+			sumMatrix.reserve(H);
 
-		Matrix add(const Matrix &other) const {
-			std::vector<T> resultValues = m_values;
-			std::vector<T> otherValues = other.getRawValues();
-			for (int i = 0; i < m_values.size(); i++) {
-				resultValues[i] = m_values[i] + otherValues[i];
+			for (int i = 0; i < H; i++) {
+				sumMatrix[i].reserve(W);
+				for (int j = 0; j < W; j++) {
+					sumMatrix[i][j] = this->m_array[i][j] + other[i][j];
+				}
 			}
-			auto result = Matrix<T>(resultValues);
-			return result;
+
+			Matrix<T, H, W> sum(sumMatrix);
+			return sum;
 		}
 
-		Matrix operator+(const Matrix &other) const {
-			Matrix<T> result = add(other);
-			return result;
+		Matrix operator+(Matrix<T, H, W> &other) {
+			Matrix<T, H, W> sum = add(other);
+			return sum;
 		}
 
 		Matrix multiply(double scalar) const {
-			std::vector<T> resultValues = m_values;
-			for (T &val : resultValues) {
-				val *= scalar;
+			std::vector<std::vector<T>> resultMatrix = this->m_array;
+			for (auto &row : resultMatrix) {
+				for (T &val : row) {
+					val *= scalar;
+				}
 			}
-			auto result = Matrix<T>{resultValues};
+			auto result = Matrix<T, H, W>{resultMatrix};
 			return result;
 		}
 
-		Matrix multiply(Matrix other) const {
-			// TODO: Implement mulitplication
+		template<unsigned int W2>
+		Matrix multiply(Matrix<T, W, W2> &other) const {
+			std::vector<std::vector<T>> productMatrix(H, std::vector<T>(W2));
+
+			for (int i = 0; i < W; i++) {
+				for (int j = 0; j < W; j++) {
+					productMatrix[i][j] = 0;
+					for (int k = 0; k < W; k++) {
+						productMatrix[i][j] += this->m_array[i][k] * other[k][j];
+					}
+				}
+			}
+
+			Matrix<T, H, W2> product(productMatrix);
+			return product;
+		}
+
+		// TODO: Implement determinant
+		T det() const {
+			T det = 0;
+
+
+			return det;
 		}
 
 		Matrix operator*(double scalar) const {
-			Matrix<T> result = multiply(scalar);
+			Matrix<T, H, W> result = multiply(scalar);
 			return result;
 		}
 
-		std::string to_string() const {
-			std::string result;
-			result += "[ ";
-			for (const T &val : m_values) {
-				result += val + ", ";
-			}
-			result += " ] ";
+		template<unsigned int W2>
+		Matrix operator*(Matrix<T, W, W2> &other) const {
+			Matrix<T, H, W> result = multiply(other);
 			return result;
-		}
-
-		template<class U>
-		friend std::ostream &operator<<(std::ostream &stream, const Matrix<U> &Matrix) {
-			stream << Matrix.to_string();
-			return stream;
 		}
 
 
