@@ -6,6 +6,7 @@
 #include <memory>
 #include <type_traits>
 #include <utility>
+#include <stdexcept>
 #include "Array2DWrapper.hpp"
 
 namespace matrices {
@@ -70,12 +71,51 @@ namespace matrices {
 			return product;
 		}
 
-		// TODO: Implement determinant
-		T det() const {
-			T det = 0;
+		T determinant() {
+			if (H != W) {
+				return 0;
+			}
 
+			std::vector<std::vector<T>> triangularForm = this->m_array;
+			convertToUpperTriangularForm(triangularForm);
+
+			T det = triangularForm[0][0];
+			for (int i = 1; i < H; i++) {
+				det *= triangularForm[i][i];
+			}
 
 			return det;
+		}
+
+		static void convertToUpperTriangularForm(std::vector<std::vector<T>> &matrix, int colToRemove = 0) {
+			if (colToRemove == H - 1) {
+				return;
+			}
+
+			for (int i = colToRemove + 1; i < H; i++) {
+				double scalar = -(matrix[i][colToRemove] / matrix[colToRemove][colToRemove]);
+				for (int j = colToRemove; j < W; j++) {
+					matrix[i][j] += matrix[colToRemove][j] * scalar;
+				}
+			}
+
+			convertToUpperTriangularForm(matrix, colToRemove + 1);
+		}
+
+
+		Matrix<T, W, H> transpose() const {
+			std::vector<std::vector<T>> transposedMatrix(W, std::vector<T>(H));
+			for (int i = 0; i < W; i++) {
+				for (int j = 0; j < H; j++) {
+					transposedMatrix[i][j] = this->m_array[j][i];
+				}
+			}
+			Matrix<T, W, H> transposed(transposedMatrix);
+			return transposed;
+		}
+
+		Matrix<T, W, H> inverse() const {
+
 		}
 
 		Matrix operator*(double scalar) const {
@@ -89,7 +129,9 @@ namespace matrices {
 			return result;
 		}
 
-
+		bool isOdd() {
+			return determinant() == 0;
+		}
 	};
 
 }

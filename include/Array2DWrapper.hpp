@@ -47,18 +47,17 @@ namespace matrices {
 			return result;
 		}
 
-		template<class U>
-		friend std::ostream &operator<<(std::ostream &stream, const Array2DWrapper<U, H, W> &array) {
+		friend std::ostream &operator<<(std::ostream &stream, const Array2DWrapper &array) {
 			stream << array.toString();
 			return stream;
 		}
 
 		class Proxy {
 		public:
-			explicit Proxy(const std::vector<T> &row) : m_row(row) {}
+			explicit Proxy(std::vector<T> &row) : m_row(row) {}
 
-			int operator[](int index) {
-				return m_row[index];
+			T &operator[](int index) {
+ 				return m_row[index];
 			}
 
 		private:

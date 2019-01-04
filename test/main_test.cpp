@@ -82,9 +82,46 @@ TEST(TestMatrix, ShouldMutliplyWithMatrix) {
 }
 
 TEST(TestMatrix, ShouldCalculateDeterminant) {
-	matrices::Matrix<int, 2, 2> matrix {
-			{2, 0},
-			{0, 2},
+	matrices::Matrix<double, 2, 2> matrix{
+			{2, 43},
+			{1, 2},
 	};
-	ASSERT_EQ(4, matrix.det());
+	ASSERT_EQ(-39, matrix.determinant());
+}
+
+TEST(TestMatrix, ShouldKnowIfMatrixIsOdd) {
+	matrices::Matrix<double, 2, 3> matrix{
+			{2, 43, 23},
+			{1, 2,  2323},
+	};
+	ASSERT_EQ(true, matrix.isOdd());
+}
+
+TEST(TestMatrix, ShouldReturnZeroDeterminant) {
+	matrices::Matrix<double, 3, 3> matrix1{
+			{1, 2, 3},
+			{4, 5, 6},
+			{7, 8, 9},
+	};
+	ASSERT_EQ(0, matrix1.determinant());
+
+	matrices::Matrix<double, 2, 3> matrix2{
+			{2, 43, 23},
+			{1, 2,  2323},
+	};
+	ASSERT_EQ(0, matrix2.determinant());
+}
+
+TEST(TestMatrix, ShouldTransposeMatrix) {
+	matrices::Matrix<int, 3, 4> matrix{
+			{1, 2, 3, 2},
+			{4, 5, 6, 5},
+			{7, 8, 9, 5}
+	};
+	matrices::Matrix<int, 4, 3> transposed = matrix.transpose();
+	for (int i = 0; i < matrix.getHeight(); i++) {
+		for (int j = 0; j < matrix.getWidth(); j++) {
+			ASSERT_EQ(matrix[i][j], transposed[j][i]);
+		}
+	}
 }
