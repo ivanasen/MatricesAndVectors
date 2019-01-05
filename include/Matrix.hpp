@@ -23,7 +23,7 @@ namespace matrices {
 		Matrix(const Matrix &source) : Array2DWrapper<T, H, W>(source) {
 		}
 
-		Matrix add(Matrix<T, H, W> &other) {
+		Matrix add(Matrix &other) {
 			std::vector<std::vector<T>> sumMatrix = this->m_array;
 			sumMatrix.reserve(H);
 
@@ -38,24 +38,19 @@ namespace matrices {
 			return sum;
 		}
 
-		Matrix operator+(Matrix<T, H, W> &other) {
-			Matrix<T, H, W> sum = add(other);
-			return sum;
-		}
-
-		Matrix multiply(double scalar) const {
+		Matrix scale(double scalar) const {
 			std::vector<std::vector<T>> resultMatrix = this->m_array;
 			for (auto &row : resultMatrix) {
 				for (T &val : row) {
 					val *= scalar;
 				}
 			}
-			auto result = Matrix<T, H, W>{resultMatrix};
+			Matrix result{resultMatrix};
 			return result;
 		}
 
 		template<unsigned int W2>
-		Matrix multiply(Matrix<T, W, W2> &other) const {
+		Matrix<T, W, W2> multiply(Matrix<T, W, W2> &other) const {
 			std::vector<std::vector<T>> productMatrix(H, std::vector<T>(W2));
 
 			for (int i = 0; i < W; i++) {
@@ -71,6 +66,26 @@ namespace matrices {
 			return product;
 		}
 
+		Matrix<T, W, H> transpose() const {
+			std::vector<std::vector<T>> transposedMatrix(W, std::vector<T>(H));
+			for (int i = 0; i < W; i++) {
+				for (int j = 0; j < H; j++) {
+					transposedMatrix[i][j] = this->m_array[j][i];
+				}
+			}
+			Matrix<T, W, H> transposed(transposedMatrix);
+			return transposed;
+		}
+
+		// TODO: Implement matrix inversion
+		Matrix invert() const {
+			if (W != H) {
+				throw std::invalid_argument("Matrix must be square in order to have an inverse.");
+			}
+			Matrix result(this->m_array);
+			return result;
+		}
+
 		T determinant() {
 			if (H != W) {
 				return 0;
@@ -83,11 +98,38 @@ namespace matrices {
 			for (int i = 1; i < H; i++) {
 				det *= triangularForm[i][i];
 			}
-
 			return det;
 		}
 
-		static void convertToUpperTriangularForm(std::vector<std::vector<T>> &matrix, int colToRemove = 0) {
+		Matrix operator+(Matrix &other) {
+			Matrix sum = add(other);
+			return sum;
+		}
+
+		Matrix operator*(double scalar) const {
+			Matrix result = scale(scalar);
+			return result;
+		}
+
+		template<unsigned int W2>
+		Matrix<T, H, W2> operator*(Matrix<T, W, W2> &other) const {
+			Matrix<T, H, W2> result = multiply(other);
+			return result;
+		}
+
+		bool isOdd() {
+			return determinant() == 0;
+		}
+
+		Matrix getUpperTriangularForm() {
+			std::vector<std::vector<T>> triangularArray = this->m_array;
+			convertToUpperTriangularForm(triangularArray);
+			Matrix triangle(triangularArray);
+			return triangle;
+		}
+
+	private:
+		void convertToUpperTriangularForm(std::vector<std::vector<T>> &matrix, int colToRemove = 0) {
 			if (colToRemove == H - 1) {
 				return;
 			}
@@ -100,37 +142,6 @@ namespace matrices {
 			}
 
 			convertToUpperTriangularForm(matrix, colToRemove + 1);
-		}
-
-
-		Matrix<T, W, H> transpose() const {
-			std::vector<std::vector<T>> transposedMatrix(W, std::vector<T>(H));
-			for (int i = 0; i < W; i++) {
-				for (int j = 0; j < H; j++) {
-					transposedMatrix[i][j] = this->m_array[j][i];
-				}
-			}
-			Matrix<T, W, H> transposed(transposedMatrix);
-			return transposed;
-		}
-
-		Matrix<T, W, H> inverse() const {
-
-		}
-
-		Matrix operator*(double scalar) const {
-			Matrix<T, H, W> result = multiply(scalar);
-			return result;
-		}
-
-		template<unsigned int W2>
-		Matrix operator*(Matrix<T, W, W2> &other) const {
-			Matrix<T, H, W> result = multiply(other);
-			return result;
-		}
-
-		bool isOdd() {
-			return determinant() == 0;
 		}
 	};
 

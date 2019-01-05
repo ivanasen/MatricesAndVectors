@@ -23,11 +23,11 @@ namespace matrices {
 			return m_array[row][col];
 		}
 
-		unsigned long getHeight() const {
+		unsigned long height() const {
 			return m_array.size();
 		}
 
-		unsigned long getWidth() const {
+		unsigned long width() const {
 			return m_array[0].size();
 		}
 
