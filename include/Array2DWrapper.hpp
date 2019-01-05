@@ -5,7 +5,7 @@
 
 namespace linalg {
 
-	template<class T, unsigned int H, unsigned int W>
+	template<class T>
 	class Array2DWrapper {
 	protected:
 		std::vector<std::vector<T>> m_array;
@@ -14,6 +14,10 @@ namespace linalg {
 		}
 
 		explicit Array2DWrapper(const std::vector<std::vector<T>> &values) : m_array(values) {
+		}
+
+		Array2DWrapper(const unsigned long &height, const unsigned long &width) {
+			m_array = std::vector<std::vector<T>>(height, std::vector<T>(width));
 		}
 
 		Array2DWrapper(const Array2DWrapper &source) : m_array(source.getWrappedArray()) {
@@ -57,7 +61,7 @@ namespace linalg {
 			explicit Proxy(std::vector<T> &row) : m_row(row) {}
 
 			T &operator[](int index) {
- 				return m_row[index];
+				return m_row[index];
 			}
 
 		private:

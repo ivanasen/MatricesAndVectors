@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <Vector.hpp>
 #include "Matrix.hpp"
 
 TEST(TestMatrix, ShouldCreateMatrixCorrectly) {
@@ -8,7 +7,7 @@ TEST(TestMatrix, ShouldCreateMatrixCorrectly) {
 			{4, 5, 6},
 			{7, 8, 9}
 	};
-	linalg::Matrix<int, 3, 3> matrix(values);
+	linalg::Matrix<int> matrix(values);
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -18,13 +17,13 @@ TEST(TestMatrix, ShouldCreateMatrixCorrectly) {
 }
 
 TEST(TestMatrix, ShouldAddTwoMatrices) {
-	linalg::Matrix<int, 3, 3> first{
+	linalg::Matrix<int> first{
 			{1, 2, 3},
 			{4, 5, 6},
 			{7, 8, 9}
 	};
 
-	linalg::Matrix<int, 3, 3> second{
+	linalg::Matrix<int> second{
 			{12, 21, 31},
 			{42, 51, 61},
 			{72, 81, 91}
@@ -40,14 +39,14 @@ TEST(TestMatrix, ShouldAddTwoMatrices) {
 }
 
 TEST(TestMatrix, ShouldMutliplyWithScalar) {
-	linalg::Matrix<int, 3, 3> matrix{
+	linalg::Matrix<int> matrix{
 			{1, 2, 3},
 			{4, 5, 6},
 			{7, 8, 9}
 	};
 
 	double scalar = 3;
-	linalg::Matrix<int, 3, 3> result = matrix * scalar;
+	linalg::Matrix<int> result = matrix * scalar;
 
 	for (int i = 0; i < result.height(); i++) {
 		for (int j = 0; j < result.width(); j++) {
@@ -57,19 +56,19 @@ TEST(TestMatrix, ShouldMutliplyWithScalar) {
 }
 
 TEST(TestMatrix, ShouldMutliplyWithMatrix) {
-	linalg::Matrix<int, 3, 3> matrix1{
+	linalg::Matrix<int> matrix1{
 			{1, 2, 3},
 			{4, 5, 6},
 			{7, 8, 9}
 	};
 
-	linalg::Matrix<int, 3, 3> matrix2{
+	linalg::Matrix<int> matrix2{
 			{1, 0, 0},
 			{0, 1, 0},
 			{0, 0, 1}
 	};
 
-	linalg::Matrix<int, 3, 3> result = matrix1 * matrix2;
+	linalg::Matrix<int> result = matrix1 * matrix2;
 
 	for (int i = 0; i < result.height(); i++) {
 		for (int j = 0; j < result.width(); j++) {
@@ -83,7 +82,7 @@ TEST(TestMatrix, ShouldMutliplyWithMatrix) {
 }
 
 TEST(TestMatrix, ShouldCalculateDeterminant) {
-	linalg::Matrix<double, 2, 2> matrix{
+	linalg::Matrix<double> matrix{
 			{2, 43},
 			{1, 2},
 	};
@@ -91,7 +90,7 @@ TEST(TestMatrix, ShouldCalculateDeterminant) {
 }
 
 TEST(TestMatrix, ShouldKnowIfMatrixIsOdd) {
-	linalg::Matrix<double, 2, 3> matrix{
+	linalg::Matrix<double> matrix{
 			{2, 43, 23},
 			{1, 2,  2323},
 	};
@@ -99,14 +98,15 @@ TEST(TestMatrix, ShouldKnowIfMatrixIsOdd) {
 }
 
 TEST(TestMatrix, ShouldReturnZeroDeterminant) {
-	linalg::Matrix<double, 3, 3> matrix1{
+	linalg::Matrix<double> matrix1{
 			{1, 2, 3},
 			{4, 5, 6},
 			{7, 8, 9},
 	};
 	ASSERT_EQ(0, matrix1.determinant());
 
-	linalg::Matrix<double, 2, 3> matrix2{
+
+	linalg::Matrix<double> matrix2{
 			{2, 43, 23},
 			{1, 2,  2323},
 	};
@@ -114,12 +114,12 @@ TEST(TestMatrix, ShouldReturnZeroDeterminant) {
 }
 
 TEST(TestMatrix, ShouldTransposeMatrix) {
-	linalg::Matrix<int, 3, 4> matrix{
+	linalg::Matrix<int> matrix{
 			{1, 2, 3, 2},
 			{4, 5, 6, 5},
 			{7, 8, 9, 5}
 	};
-	linalg::Matrix<int, 4, 3> transposed = matrix.transpose();
+	linalg::Matrix<int> transposed = matrix.transpose();
 	for (int i = 0; i < matrix.height(); i++) {
 		for (int j = 0; j < matrix.width(); j++) {
 			ASSERT_EQ(matrix[i][j], transposed[j][i]);
@@ -128,44 +128,56 @@ TEST(TestMatrix, ShouldTransposeMatrix) {
 }
 
 TEST(TestMatrix, ShouldErrorIfNoInverse) {
-	linalg::Matrix<int, 3, 4> matrix{
+	linalg::Matrix<int> matrix{
 			{1, 2, 3, 2},
 			{4, 5, 6, 5},
 			{7, 8, 9, 5}
 	};
-	EXPECT_THROW(matrix.invert(), std::invalid_argument);
+	EXPECT_THROW(matrix.inverse(), std::invalid_argument);
 }
 
-TEST(TestVector, ShouldCalculateMagnitudeCorrectly) {
-	linalg::Vector<double, 3> vector{1, 2, 2};
-	ASSERT_EQ(3, vector.magnitude());
-}
+TEST(TestMatrix, ShouldConvertToDiagonalMatrix) {
+	linalg::Matrix<int> rectMatrix{
+			{1, 2, 3, 2},
+			{4, 5, 6, 5},
+			{7, 8, 9, 5}
+	};
+	EXPECT_THROW(rectMatrix.toDiagonalMatrix(), std::invalid_argument);
 
-TEST(TestVector, ShouldNormalizeVectorCorrectly) {
-	linalg::Vector<double, 3> vector{34, 12, 3};
-	double magnitude = vector.magnitude();
-	vector.normalize();
-	ASSERT_EQ(vector[0], 34 / magnitude);
-	ASSERT_EQ(vector[1], 12 / magnitude);
-	ASSERT_EQ(vector[2], 3 / magnitude);
-}
+	linalg::Matrix<double> squareMatrix{
+			{1, 2, 3},
+			{4, 5, 6},
+			{7, 8, 10}
+	};
 
-TEST(TestVector, ShouldCalculateScalarProductCorrectly) {
-	linalg::Vector<double, 3> vector1{3, 12, 12};
-	linalg::Vector<double, 3> vector2{23, 1, 11};
-	double result = vector1.scalar(vector2);
-	double expected = vector1[0] * vector2[0] +
-	                  vector1[1] * vector2[1] +
-	                  vector1[2] * vector2[2];
-	ASSERT_EQ(result, expected);
-}
+	auto diagonalMatrix = squareMatrix.toDiagonalMatrix();
 
-TEST(TestVector, ShouldCalculateCrossProductCorrectly) {
-	linalg::Vector<double, 3> vector1{3, 12, 12};
-	linalg::Vector<double, 3> vector2{23, 87, 11};
-	linalg::Vector<double, 3> product = vector1.cross(vector2);
-	linalg::Vector<double, 3> expected{-912, 243, -15};
-	for (int i = 0; i < 3; i++) {
-		ASSERT_EQ(product[i], expected[i]);
+	for (int i = 0; i < diagonalMatrix.height(); i++) {
+		for (int j = 0; j < diagonalMatrix.width(); j++) {
+			if (i == j) {
+				ASSERT_NE(0, diagonalMatrix[i][j]);
+			} else {
+				ASSERT_EQ(0, diagonalMatrix[i][j]);
+			}
+		}
 	}
-};
+}
+
+TEST(TestMatrix, ShouldFindInverseOfMatrix) {
+	linalg::Matrix<double> rectMatrix{
+			{1, 2, 3},
+			{4, 5, 6},
+			{7, 8, 10}
+	};
+	linalg::Matrix<double> expectedInverse{
+			{-2.0 / 3, -4.0 / 3, 1},
+			{-2.0 / 3, 11.0 / 3, -2},
+			{1,        -2,       1}
+	};
+	linalg::Matrix<double> inverse = rectMatrix.inverse();
+	for (int i = 0; i < inverse.height(); i++) {
+		for (int j = 0; j < inverse.width(); j++) {
+			ASSERT_EQ(expectedInverse[i][j], inverse[i][j]);
+		}
+	}
+}

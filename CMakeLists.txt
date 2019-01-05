@@ -9,7 +9,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include/)
 
 add_library(MatricesAndVectors INTERFACE)
 
-add_executable(runTests ${PROJECT_SOURCE_DIR}/test/main_test.cpp)
+add_executable(runTests test/matrix_test.cpp test/vector_test.cpp)
 
 target_link_libraries(runTests gtest gtest_main pthread)
 target_link_libraries(runTests MatricesAndVectors)
