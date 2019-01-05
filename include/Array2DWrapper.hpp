@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <initializer_list>
+#include <iterator>
 
 namespace linalg {
 
@@ -58,18 +59,34 @@ namespace linalg {
 
 		class Proxy {
 		public:
-			explicit Proxy(std::vector<T> &row) : m_row(row) {}
+			explicit Proxy(std::vector<T> &row) : m_row(&row) {}
 
 			T &operator[](int index) {
-				return m_row[index];
+				return (*m_row)[index];
 			}
 
 		private:
-			std::vector<T> m_row;
+			std::vector<T> *m_row;
 		};
 
 		Proxy operator[](int index) {
 			return Proxy(m_array[index]);
+		}
+
+		typename std::vector<std::vector<T>>::iterator begin() {
+			return m_array.begin();
+		}
+
+		typename std::vector<std::vector<T>>::const_iterator begin() const {
+			return m_array.cbegin();
+		}
+
+		typename std::vector<std::vector<T>>::iterator end() {
+			return m_array.end();
+		}
+
+		typename std::vector<std::vector<T>>::const_iterator end() const {
+			return m_array.cend();
 		}
 	};
 }

@@ -28,27 +28,25 @@ namespace linalg {
 		}
 
 		Matrix add(Matrix &other) {
-			std::vector<std::vector<T>> sumMatrix = this->m_array;
+			Matrix sum(*this);
 
 			for (int i = 0; i < this->height(); i++) {
 				for (int j = 0; j < this->width(); j++) {
-					sumMatrix[i][j] = (*this)[i][j] + other[i][j];
+					sum[i][j] += other[i][j];
 				}
 			}
 
-			Matrix<T> sum(sumMatrix);
 			return sum;
 		}
 
 		Matrix scale(double scalar) const {
-			std::vector<std::vector<T>> resultMatrix = this->m_array;
-			for (auto &row : resultMatrix) {
+			Matrix scaled(*this);
+			for (auto &row : scaled) {
 				for (T &val : row) {
 					val *= scalar;
 				}
 			}
-			Matrix result{resultMatrix};
-			return result;
+			return scaled;
 		}
 
 		Matrix<T> multiply(Matrix<T> &other) {
@@ -61,18 +59,17 @@ namespace linalg {
 				throw std::invalid_argument("First Matrix's columns have to be the same count as the second\'s rows.");
 			}
 
-			std::vector<std::vector<T>> productMatrix(height, std::vector<T>(otherWidth));
+			Matrix product(height, otherWidth);
 
 			for (int i = 0; i < width; i++) {
 				for (int j = 0; j < width; j++) {
-					productMatrix[i][j] = 0;
+					product[i][j] = 0;
 					for (int k = 0; k < width; k++) {
-						productMatrix[i][j] += (*this)[i][k] * other[k][j];
+						product[i][j] += (*this)[i][k] * other[k][j];
 					}
 				}
 			}
 
-			Matrix<T> product(productMatrix);
 			return product;
 		}
 
@@ -80,42 +77,40 @@ namespace linalg {
 			auto width = this->width();
 			auto height = this->height();
 
-			std::vector<std::vector<T>> transposedMatrix(width, std::vector<T>(height));
+			Matrix transposed(width, height);
 			for (int i = 0; i < width; i++) {
 				for (int j = 0; j < height; j++) {
-					transposedMatrix[i][j] = (*this)[j][i];
+					transposed[i][j] = (*this)[j][i];
 				}
 			}
-			Matrix<T> transposed(transposedMatrix);
 			return transposed;
 		}
 
-		Matrix inverse() {
+		Matrix invert() {
 			if (this->width() != this->height()) {
 				throw std::invalid_argument("Matrix must be square in order to have an inverse.");
 			}
 
-			T det = determinant();
-			if (det == 0) {
+			T determinant = det();
+			if (determinant == 0) {
 				throw std::invalid_argument("Matrix\'s rows are linearly dependant, so it doesn\'t have an inverse");
 			}
 
 			Matrix adjoint = getAdjointMatrix();
 
 			unsigned long size = this->height();
-			std::vector<std::vector<T>> inverse(size, std::vector<T>(size));
+			Matrix inverse(size, size);
 
 			for (int i = 0; i < size; i++) {
 				for (int j = 0; j < size; j++) {
-					inverse[i][j] = adjoint[i][j] / det;
+					inverse[i][j] = adjoint[i][j] / determinant;
 				}
 			}
 
-			Matrix inverseMatrix(inverse);
-			return inverseMatrix;
+			return inverse;
 		}
 
-		T determinant() {
+		T det() {
 			if (this->height() != this->width()) {
 				return 0;
 			}
@@ -124,7 +119,7 @@ namespace linalg {
 				return (*this)[0][0] * (*this)[1][1] - (*this)[0][1] * (*this)[1][0];
 			}
 
-			std::vector<std::vector<T>> triangularForm = this->m_array;
+			Matrix triangularForm(*this);
 			convertToUpperTriangularForm(triangularForm);
 
 			T det = triangularForm[0][0];
@@ -150,40 +145,31 @@ namespace linalg {
 		}
 
 		bool isOdd() {
-			return determinant() == 0;
+			return det() == 0;
 		}
 
 		Matrix toDiagonalMatrix() {
 			if (this->height() != this->width()) {
 				throw std::invalid_argument("Non-Square Matrices don\'t have a diagonal matrix.");
 			}
-			std::vector<std::vector<T>> triangularArray = this->m_array;
-			convertToUpperTriangularForm(triangularArray);
 
-			if (hasZeroRows(triangularArray)) {
+			Matrix triangular(*this);
+			convertToUpperTriangularForm(triangular);
+
+			if (hasZeroRows(triangular)) {
 				throw std::invalid_argument("Matrices with linearly dependant rows don\'t have a diagonal matrix.");
 			}
 
-			convertToLowerTriangularForm(triangularArray);
-			if (hasZeroRows(triangularArray)) {
+			convertToLowerTriangularForm(triangular);
+			if (hasZeroRows(triangular)) {
 				throw std::invalid_argument("Matrices with linearly dependant rows don\'t have a diagonal matrix.");
 			}
 
-			Matrix triangle(triangularArray);
-			return triangle;
-		}
-
-		static Matrix makeIdentity(unsigned int size) {
-			std::vector<std::vector<T>> identity(size, std::vector<T>(size));
-			for (int i = 0; i < size; i++) {
-				identity[i][i] = 1;
-			}
-			Matrix<T> identityMatrix(identity);
-			return identityMatrix;
+			return triangular;
 		}
 
 		Matrix getCofactor(int rowToRemove, int colToRemove) {
-			std::vector<std::vector<T>> cofactor(this->height() - 1, std::vector<T>(this->width() - 1));
+			Matrix cofactor(this->height() - 1, this->width() - 1);
 
 			for (int row = 0, cofactorRow = 0; row < this->height(); row++) {
 				if (row == rowToRemove) {
@@ -198,35 +184,40 @@ namespace linalg {
 				cofactorRow++;
 			}
 
-			Matrix cofactorMatrix(cofactor);
-			return cofactorMatrix;
+			return cofactor;
+		}
+
+		static Matrix makeIdentity(unsigned int size) {
+			Matrix identity(size, size);
+			for (int i = 0; i < size; i++) {
+				identity[i][i] = 1;
+			}
+			return identity;
 		}
 
 	private:
 		Matrix getAdjointMatrix() {
 			auto size = this->height();
-			std::vector<std::vector<T>> adjoint(size, std::vector<T>(size));
+			Matrix adjoint(size, size);
 
 			for (int i = 0; i < size; i++) {
 				for (int j = 0; j < size; j++) {
 					Matrix cofactor = getCofactor(i, j);
 					int sign = (i + j) % 2 == 0 ? 1 : -1;
-					adjoint[j][i] = sign * cofactor.determinant();
+					adjoint[j][i] = sign * cofactor.det();
 				}
 			}
-
-			Matrix adjointMatrix(adjoint);
-			return adjointMatrix;
+			return adjoint;
 		}
 
-		static void convertToUpperTriangularForm(std::vector<std::vector<T>> &matrix, int colToRemove = 0) {
-			if (colToRemove == matrix.size() - 1) {
+		static void convertToUpperTriangularForm(Matrix &matrix, int colToRemove = 0) {
+			if (colToRemove == matrix.height() - 1) {
 				return;
 			}
 
-			for (int i = colToRemove + 1; i < matrix.size(); i++) {
+			for (int i = colToRemove + 1; i < matrix.height(); i++) {
 				double scalar = -(matrix[i][colToRemove] / matrix[colToRemove][colToRemove]);
-				for (int j = colToRemove; j < matrix[0].size(); j++) {
+				for (int j = colToRemove; j < matrix.width(); j++) {
 					matrix[i][j] += matrix[colToRemove][j] * scalar;
 				}
 			}
@@ -234,10 +225,10 @@ namespace linalg {
 			convertToUpperTriangularForm(matrix, colToRemove + 1);
 		}
 
-		static void convertToLowerTriangularForm(std::vector<std::vector<T>> &matrix, int padding = 0) {
-			long colToRemove = matrix[0].size() - 1 - padding;
+		static void convertToLowerTriangularForm(Matrix &matrix, int padding = 0) {
+			long colToRemove = matrix.width() - 1 - padding;
 
-			if (padding == matrix[0].size() - 1) {
+			if (padding == matrix.width() - 1) {
 				return;
 			}
 
@@ -251,8 +242,8 @@ namespace linalg {
 			convertToLowerTriangularForm(matrix, padding + 1);
 		}
 
-		static bool hasZeroRows(const std::vector<std::vector<T>> &matrix) {
-			for (const std::vector<T> &row : matrix) {
+		static bool hasZeroRows(const Matrix &matrix) {
+			for (auto &row : matrix) {
 				int i = 0;
 				while (i < row.size() && row[i] == 0) {
 					if (i == row.size() - 1) {

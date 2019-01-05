@@ -16,6 +16,18 @@ TEST(TestMatrix, ShouldCreateMatrixCorrectly) {
 	}
 }
 
+TEST(TestMatrix, ShouldModifyMatrixCellsCorrectly) {
+	linalg::Array2DWrapper<int> array{
+			{1, 1, 1},
+			{1, 1, 1},
+			{1, 1, 1}
+	};
+	int expectedValue = 56;
+	array[2][0] = expectedValue;
+
+	ASSERT_EQ(array[2][0], expectedValue);
+}
+
 TEST(TestMatrix, ShouldAddTwoMatrices) {
 	linalg::Matrix<int> first{
 			{1, 2, 3},
@@ -86,7 +98,7 @@ TEST(TestMatrix, ShouldCalculateDeterminant) {
 			{2, 43},
 			{1, 2},
 	};
-	ASSERT_EQ(-39, matrix.determinant());
+	ASSERT_EQ(-39, matrix.det());
 }
 
 TEST(TestMatrix, ShouldKnowIfMatrixIsOdd) {
@@ -103,14 +115,14 @@ TEST(TestMatrix, ShouldReturnZeroDeterminant) {
 			{4, 5, 6},
 			{7, 8, 9},
 	};
-	ASSERT_EQ(0, matrix1.determinant());
+	ASSERT_EQ(0, matrix1.det());
 
 
 	linalg::Matrix<double> matrix2{
 			{2, 43, 23},
 			{1, 2,  2323},
 	};
-	ASSERT_EQ(0, matrix2.determinant());
+	ASSERT_EQ(0, matrix2.det());
 }
 
 TEST(TestMatrix, ShouldTransposeMatrix) {
@@ -133,7 +145,7 @@ TEST(TestMatrix, ShouldErrorIfNoInverse) {
 			{4, 5, 6, 5},
 			{7, 8, 9, 5}
 	};
-	EXPECT_THROW(matrix.inverse(), std::invalid_argument);
+	EXPECT_THROW(matrix.invert(), std::invalid_argument);
 }
 
 TEST(TestMatrix, ShouldConvertToDiagonalMatrix) {
@@ -174,7 +186,7 @@ TEST(TestMatrix, ShouldFindInverseOfMatrix) {
 			{-2.0 / 3, 11.0 / 3, -2},
 			{1,        -2,       1}
 	};
-	linalg::Matrix<double> inverse = rectMatrix.inverse();
+	linalg::Matrix<double> inverse = rectMatrix.invert();
 	for (int i = 0; i < inverse.height(); i++) {
 		for (int j = 0; j < inverse.width(); j++) {
 			ASSERT_EQ(expectedInverse[i][j], inverse[i][j]);

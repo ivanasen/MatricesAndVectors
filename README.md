@@ -1,2 +1,2 @@
 # MatricesAndVectors
-C++ library for work with linalg and vectors
+C++ library for work with matrices and vectors
