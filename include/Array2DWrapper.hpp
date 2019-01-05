@@ -3,7 +3,7 @@
 #include <vector>
 #include <initializer_list>
 
-namespace matrices {
+namespace linalg {
 
 	template<class T, unsigned int H, unsigned int W>
 	class Array2DWrapper {

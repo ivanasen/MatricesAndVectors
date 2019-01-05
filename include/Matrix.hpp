@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include "Array2DWrapper.hpp"
 
-namespace matrices {
+namespace linalg {
 
 	template<class T, unsigned int H, unsigned int W>
 	class Matrix : public Array2DWrapper<T, H, W> {
@@ -30,7 +30,7 @@ namespace matrices {
 			for (int i = 0; i < H; i++) {
 				sumMatrix[i].reserve(W);
 				for (int j = 0; j < W; j++) {
-					sumMatrix[i][j] = this->m_array[i][j] + other[i][j];
+					sumMatrix[i][j] = (*this)[i][j] + other[i][j];
 				}
 			}
 
@@ -50,14 +50,14 @@ namespace matrices {
 		}
 
 		template<unsigned int W2>
-		Matrix<T, W, W2> multiply(Matrix<T, W, W2> &other) const {
+		Matrix<T, W, W2> multiply(Matrix<T, W, W2> &other) {
 			std::vector<std::vector<T>> productMatrix(H, std::vector<T>(W2));
 
 			for (int i = 0; i < W; i++) {
 				for (int j = 0; j < W; j++) {
 					productMatrix[i][j] = 0;
 					for (int k = 0; k < W; k++) {
-						productMatrix[i][j] += this->m_array[i][k] * other[k][j];
+						productMatrix[i][j] += (*this)[i][k] * other[k][j];
 					}
 				}
 			}
@@ -66,11 +66,11 @@ namespace matrices {
 			return product;
 		}
 
-		Matrix<T, W, H> transpose() const {
+		Matrix<T, W, H> transpose() {
 			std::vector<std::vector<T>> transposedMatrix(W, std::vector<T>(H));
 			for (int i = 0; i < W; i++) {
 				for (int j = 0; j < H; j++) {
-					transposedMatrix[i][j] = this->m_array[j][i];
+					transposedMatrix[i][j] = (*this)[j][i];
 				}
 			}
 			Matrix<T, W, H> transposed(transposedMatrix);
@@ -82,6 +82,8 @@ namespace matrices {
 			if (W != H) {
 				throw std::invalid_argument("Matrix must be square in order to have an inverse.");
 			}
+
+
 			Matrix result(this->m_array);
 			return result;
 		}
@@ -89,6 +91,10 @@ namespace matrices {
 		T determinant() {
 			if (H != W) {
 				return 0;
+			}
+
+			if (W == 2) {
+				return (*this)[0][0] * (*this)[1][1] - (*this)[0][1] * (*this)[1][0];
 			}
 
 			std::vector<std::vector<T>> triangularForm = this->m_array;
@@ -108,11 +114,13 @@ namespace matrices {
 
 		Matrix operator*(double scalar) const {
 			Matrix result = scale(scalar);
+
+
 			return result;
 		}
 
 		template<unsigned int W2>
-		Matrix<T, H, W2> operator*(Matrix<T, W, W2> &other) const {
+		Matrix<T, H, W2> operator*(Matrix<T, W, W2> &other) {
 			Matrix<T, H, W2> result = multiply(other);
 			return result;
 		}
