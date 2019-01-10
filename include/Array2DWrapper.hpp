@@ -44,7 +44,7 @@ namespace linalg {
 			std::string result;
 			for (auto &row : m_array) {
 				for (const T &val : row) {
-					result += std::to_string(val) + " ";
+					result += std::to_string(val) + "\t";
 				}
 				result += '\n';
 			}

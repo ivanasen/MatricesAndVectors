@@ -3,9 +3,9 @@
 
 TEST(TestMatrix, ShouldCreateMatrixCorrectly) {
 	std::vector<std::vector<int>> values{
-			{1, 2, 3},
-			{4, 5, 6},
-			{7, 8, 9}
+			{1, 22, 3},
+			{4, 5, 6434},
+			{7, 824, 9}
 	};
 	linalg::Matrix<int> matrix(values);
 
@@ -14,6 +14,8 @@ TEST(TestMatrix, ShouldCreateMatrixCorrectly) {
 			ASSERT_EQ(matrix[i][j], values[i][j]);
 		}
 	}
+
+	std::cout << matrix;
 }
 
 TEST(TestMatrix, ShouldModifyMatrixCellsCorrectly) {
