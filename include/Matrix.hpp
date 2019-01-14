@@ -27,6 +27,8 @@ namespace linalg {
 		Matrix(const Matrix &source) : Array2DWrapper<T>(source) {
 		}
 
+		virtual ~Matrix() = default;
+
 		Matrix add(Matrix &other) {
 			Matrix sum(*this);
 

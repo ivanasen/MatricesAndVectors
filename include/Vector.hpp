@@ -13,7 +13,10 @@ namespace linalg {
 		explicit Vector(const std::vector<std::vector<T>> &values) : Matrix<T>(values) {
 		}
 
-		Vector(const Vector &source) : Matrix<T>(source) {
+		explicit Vector(const std::vector<T> &values) : Matrix<T>(std::vector<std::vector<T>>(1, values)) {
+		}
+
+		Vector(const Matrix<T> &source) : Matrix<T>(source) {
 		}
 
 		T magnitude() {
