@@ -9,10 +9,10 @@ TEST(TestVector, ShouldCalculateMagnitudeCorrectly) {
 TEST(TestVector, ShouldNormalizeVectorCorrectly) {
 	linalg::Vector<double> vector{34, 12, 3};
 	double magnitude = vector.magnitude();
-	vector.normalize();
-	ASSERT_EQ(vector[0], 34 / magnitude);
-	ASSERT_EQ(vector[1], 12 / magnitude);
-	ASSERT_EQ(vector[2], 3 / magnitude);
+	linalg::Vector normalised = vector.normalise();
+	ASSERT_EQ(normalised[0], 34 / magnitude);
+	ASSERT_EQ(normalised[1], 12 / magnitude);
+	ASSERT_EQ(normalised[2], 3 / magnitude);
 }
 
 TEST(TestVector, ShouldCalculateScalarProductCorrectly) {
@@ -35,4 +35,18 @@ TEST(TestVector, ShouldCalculateCrossProductCorrectly) {
 	}
 };
 
+
+TEST(TestVector, ShouldApplyLinearTransformation) {
+	linalg::Matrix<double> transformation{
+			{2, 0, 0},
+			{0, 2, 0},
+			{0, 0, 2}
+	};
+	linalg::Vector<double> vector{1, 23, 4};
+	linalg::Vector<double> transformed = transformation * vector;
+
+	for (int i = 0; i < 3; i++) {
+		ASSERT_EQ(transformed[i], vector[i] * 2);
+	}
+}
 

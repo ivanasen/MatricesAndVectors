@@ -14,8 +14,6 @@ TEST(TestMatrix, ShouldCreateMatrixCorrectly) {
 			ASSERT_EQ(matrix[i][j], values[i][j]);
 		}
 	}
-
-	std::cout << matrix;
 }
 
 TEST(TestMatrix, ShouldModifyMatrixCellsCorrectly) {

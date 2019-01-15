@@ -6,34 +6,43 @@
 namespace linalg {
 	template<class T>
 	class Vector : public Matrix<T> {
+	private:
+		std::vector<std::vector<T>> toMatrixVector(const std::vector<T> &values) {
+			std::vector<std::vector<T>> matrixVector(values.size(), std::vector<T>(1));
+
+			for (int i = 0; i < values.size(); i++) {
+				matrixVector[i][0] = values[i];
+			}
+
+			return matrixVector;
+		}
+
 	public:
-		Vector(const std::initializer_list<T> &values) : Matrix<T>(std::vector<std::vector<T>>(1, values)) {
+		Vector(const std::initializer_list<T> &values) : Matrix<T>(toMatrixVector(values)) {
 		}
 
-		explicit Vector(const std::vector<std::vector<T>> &values) : Matrix<T>(values) {
+		explicit Vector(const std::vector<T> &values) : Matrix<T>(toMatrixVector(values)) {
 		}
 
-		explicit Vector(const std::vector<T> &values) : Matrix<T>(std::vector<std::vector<T>>(1, values)) {
-		}
-
-		Vector(const Matrix<T> &source) : Matrix<T>(source) {
+		explicit Vector(const Matrix<T> &source) : Matrix<T>(source) {
 		}
 
 		T magnitude() {
 			T magnitude = 0;
-			for (T &val : this->m_array[0]) {
-				magnitude += val * val;
+			for (int i = 0; i < this->size(); i++) {
+				magnitude += (*this)[i] * (*this)[i];
 			}
 			magnitude = std::sqrt(magnitude);
 			return magnitude;
 		}
 
-		Vector normalize() {
+		Vector normalise() {
 			T vectorMagnitude = magnitude();
-			for (T &val : this->m_array[0]) {
-				val /= vectorMagnitude;
+			std::vector<T> normalizedArray(this->height());
+			for (int i = 0; i < this->height(); i++) {
+				normalizedArray[i] = (*this)[i] / vectorMagnitude;
 			}
-			return *this;
+			return Vector(normalizedArray);
 		}
 
 		T scalar(Vector &other) {
@@ -56,11 +65,16 @@ namespace linalg {
 		}
 
 		const T &operator[](int index) {
-			return this->m_array[0][index];
+			return this->m_array[index][0];
+		}
+
+		friend const Vector operator*(Matrix<T> &matrix, Vector &vector) {
+			auto vectorMatrix = static_cast<Matrix<T>>(vector);
+			return Vector(matrix * vectorMatrix);
 		}
 
 		unsigned long size() {
-			return this->width();
+			return this->height();
 		}
 	};
 }
