@@ -16,6 +16,9 @@ namespace linalg {
 	template<class T>
 	class Matrix : public Array2DWrapper<T> {
 	public:
+		Matrix() : Array2DWrapper<T>() {
+		}
+
 		Matrix(const std::initializer_list<std::vector<T>> &values) : Array2DWrapper<T>(values) {
 		}
 

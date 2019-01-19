@@ -11,6 +11,8 @@ namespace linalg {
 	protected:
 		std::vector<std::vector<T>> m_array;
 	public:
+		Array2DWrapper() = default;
+
 		Array2DWrapper(const std::initializer_list<std::vector<T>> &values) : m_array(values) {
 		}
 
