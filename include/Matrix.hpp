@@ -5,6 +5,7 @@
 #include <initializer_list>
 #include <memory>
 #include <type_traits>
+#include <cmath>
 #include <utility>
 #include <stdexcept>
 #include "Array2DWrapper.hpp"
@@ -46,6 +47,16 @@ namespace linalg {
 			for (auto &row : scaled) {
 				for (T &val : row) {
 					val *= scalar;
+				}
+			}
+			return scaled;
+		}
+
+		Matrix divide(double scalar) const {
+			Matrix scaled(*this);
+			for (auto &row : scaled) {
+				for (T &val : row) {
+					val /= scalar;
 				}
 			}
 			return scaled;
@@ -93,19 +104,22 @@ namespace linalg {
 				throw std::invalid_argument("Matrix must be square in order to have an inverse.");
 			}
 
-			T determinant = det();
-			if (determinant == 0) {
-				throw std::invalid_argument("Matrix\'s rows are linearly dependant, so it doesn\'t have an inverse");
+			unsigned long size = this->height();
+
+			Matrix copy = Matrix(*this);
+			Matrix inverse = makeIdentity(size);
+
+			toUpperDiagonalMatrix(copy, inverse);
+			toLowerDiagonalMatrix(copy, inverse);
+
+			if (hasZeroRows(copy)) {
+				throw std::invalid_argument("Matrix must not be odd in order to have an inverse.");
 			}
 
-			Matrix adjoint = getAdjointMatrix();
-
-			unsigned long size = this->height();
-			Matrix inverse(size, size);
-
-			for (int i = 0; i < size; i++) {
-				for (int j = 0; j < size; j++) {
-					inverse[i][j] = adjoint[i][j] / determinant;
+			for (unsigned long i = 0; i < size; i++) {
+				T scalar = copy[i][i];
+				for (unsigned long j = 0; j < size; j++) {
+					inverse[i][j] /= scalar;
 				}
 			}
 
@@ -122,7 +136,7 @@ namespace linalg {
 			}
 
 			Matrix triangularForm(*this);
-			convertToUpperTriangularForm(triangularForm);
+			toUpperDiagonalMatrix(triangularForm);
 
 			T det = triangularForm[0][0];
 			for (int i = 1; i < this->height(); i++) {
@@ -138,6 +152,11 @@ namespace linalg {
 
 		Matrix operator*(double scalar) const {
 			Matrix result = multiply(scalar);
+			return result;
+		}
+
+		Matrix operator/(double scalar) const {
+			Matrix result = divide(scalar);
 			return result;
 		}
 
@@ -161,13 +180,9 @@ namespace linalg {
 			}
 
 			Matrix triangular(*this);
-			convertToUpperTriangularForm(triangular);
+			toUpperDiagonalMatrix(triangular);
+			toLowerDiagonalMatrix(triangular);
 
-			if (hasZeroRows(triangular)) {
-				throw std::invalid_argument("Matrices with linearly dependant rows don\'t have a diagonal matrix.");
-			}
-
-			convertToLowerTriangularForm(triangular);
 			if (hasZeroRows(triangular)) {
 				throw std::invalid_argument("Matrices with linearly dependant rows don\'t have a diagonal matrix.");
 			}
@@ -194,7 +209,7 @@ namespace linalg {
 			return cofactor;
 		}
 
-		static Matrix makeIdentity(unsigned int size) {
+		static Matrix makeIdentity(unsigned long size) {
 			Matrix identity(size, size);
 			for (int i = 0; i < size; i++) {
 				identity[i][i] = 1;
@@ -217,22 +232,28 @@ namespace linalg {
 			return adjoint;
 		}
 
-		static void convertToUpperTriangularForm(Matrix &matrix, int colToRemove = 0) {
-			if (colToRemove == matrix.height() - 1) {
+		static void toUpperDiagonalMatrix(Matrix &matrix, int colToRemove = 0) {
+			Matrix rightSide = makeIdentity(matrix.height());
+			toUpperDiagonalMatrix(matrix, rightSide, colToRemove);
+		}
+
+		static void toUpperDiagonalMatrix(Matrix &matrix, Matrix &rightSide, int padding = 0) {
+			if (padding == matrix.height() - 1) {
 				return;
 			}
 
-			for (int i = colToRemove + 1; i < matrix.height(); i++) {
-				double scalar = -(matrix[i][colToRemove] / matrix[colToRemove][colToRemove]);
-				for (int j = colToRemove; j < matrix.width(); j++) {
-					matrix[i][j] += matrix[colToRemove][j] * scalar;
+			for (int i = padding + 1; i < matrix.height(); i++) {
+				T scalar = -(matrix[i][padding] / matrix[padding][padding]);
+				for (int j = 0; j < matrix.width(); j++) {
+					matrix[i][j] += matrix[padding][j] * scalar;
+					rightSide[i][j] += rightSide[padding][j] * scalar;
 				}
 			}
 
-			convertToUpperTriangularForm(matrix, colToRemove + 1);
+			toUpperDiagonalMatrix(matrix, rightSide, padding + 1);
 		}
 
-		static void convertToLowerTriangularForm(Matrix &matrix, int padding = 0) {
+		static void toLowerDiagonalMatrix(Matrix &matrix, Matrix &rightSide, int padding = 0) {
 			long colToRemove = matrix.width() - 1 - padding;
 
 			if (padding == matrix.width() - 1) {
@@ -240,13 +261,19 @@ namespace linalg {
 			}
 
 			for (long i = colToRemove - 1; i >= 0; i--) {
-				double scalar = -(matrix[i][colToRemove] / matrix[colToRemove][colToRemove]);
-				for (long j = colToRemove; j >= 0; j--) {
+				T scalar = -(matrix[i][colToRemove] / matrix[colToRemove][colToRemove]);
+				for (long j = matrix.width() - 1; j >= 0; j--) {
 					matrix[i][j] += matrix[colToRemove][j] * scalar;
+					rightSide[i][j] += rightSide[colToRemove][j] * scalar;
 				}
 			}
 
-			convertToLowerTriangularForm(matrix, padding + 1);
+			toLowerDiagonalMatrix(matrix, rightSide, padding + 1);
+		}
+
+		static void toLowerDiagonalMatrix(Matrix &matrix, int padding = 0) {
+			Matrix rightSide = makeIdentity(matrix.height());
+			toLowerDiagonalMatrix(matrix, rightSide, padding);
 		}
 
 		static bool hasZeroRows(const Matrix &matrix) {
