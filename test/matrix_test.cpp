@@ -58,7 +58,7 @@ TEST(TestMatrix, ShouldMutliplyWithScalar) {
 	};
 
 	double scalar = 3;
-	linalg::Matrix<int> result = matrix * scalar;
+	linalg::Matrix<int> result = scalar * matrix;
 
 	for (int i = 0; i < result.height(); i++) {
 		for (int j = 0; j < result.width(); j++) {

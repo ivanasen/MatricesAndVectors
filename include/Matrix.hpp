@@ -41,7 +41,7 @@ namespace linalg {
 			return sum;
 		}
 
-		Matrix scale(double scalar) const {
+		Matrix multiply(double scalar) const {
 			Matrix scaled(*this);
 			for (auto &row : scaled) {
 				for (T &val : row) {
@@ -137,8 +137,13 @@ namespace linalg {
 		}
 
 		Matrix operator*(double scalar) const {
-			Matrix result = scale(scalar);
+			Matrix result = multiply(scalar);
 			return result;
+		}
+
+		friend const Matrix<T> operator*(double scalar, Matrix<T> &matrix) {
+			Matrix scaled = matrix * scalar;
+			return scaled;
 		}
 
 		Matrix<T> operator*(Matrix<T> &other) {
