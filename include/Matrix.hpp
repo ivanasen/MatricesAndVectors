@@ -45,7 +45,13 @@ namespace linalg {
 			return sum;
 		}
 
-		Matrix multiply(double scalar) const {
+		Matrix add(T &value) {
+			Matrix identity = Matrix::makeIdentity(this->height());
+			Matrix addMatrix = value * identity;
+			return add(addMatrix);
+		}
+
+		Matrix multiply(T scalar) const {
 			Matrix scaled(*this);
 			for (auto &row : scaled) {
 				for (T &val : row) {
@@ -55,7 +61,7 @@ namespace linalg {
 			return scaled;
 		}
 
-		Matrix divide(double scalar) const {
+		Matrix divide(T scalar) const {
 			Matrix scaled(*this);
 			for (auto &row : scaled) {
 				for (T &val : row) {
@@ -63,6 +69,11 @@ namespace linalg {
 				}
 			}
 			return scaled;
+		}
+
+		Matrix divide(Matrix other) {
+			Matrix otherInverse = other.invert();
+			return multiply(otherInverse);
 		}
 
 		Matrix<T> multiply(Matrix<T> &other) {
@@ -148,27 +159,37 @@ namespace linalg {
 			return det;
 		}
 
-		Matrix operator+(Matrix &other) {
+		virtual Matrix operator+(Matrix &other) {
 			Matrix sum = add(other);
 			return sum;
 		}
 
-		Matrix operator*(double scalar) const {
+		virtual Matrix operator+(T &value) {
+			Matrix sum = add(value);
+			return sum;
+		}
+
+		virtual Matrix operator*(T scalar) const {
 			Matrix result = multiply(scalar);
 			return result;
 		}
 
-		Matrix operator/(double scalar) const {
+		virtual Matrix operator/(T scalar) {
 			Matrix result = divide(scalar);
 			return result;
 		}
 
-		friend const Matrix<T> operator*(double scalar, Matrix<T> &matrix) {
+		virtual Matrix operator/(Matrix<T> &matrix) {
+			Matrix result = divide(matrix);
+			return result;
+		}
+
+		friend const Matrix<T> operator*(T scalar, Matrix<T> &matrix) {
 			Matrix scaled = matrix * scalar;
 			return scaled;
 		}
 
-		Matrix<T> operator*(Matrix<T> &other) {
+		virtual Matrix<T> operator*(Matrix<T> &other) {
 			Matrix<T> result = multiply(other);
 			return result;
 		}
