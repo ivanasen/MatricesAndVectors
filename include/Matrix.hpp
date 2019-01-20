@@ -34,6 +34,14 @@ namespace linalg {
 		virtual ~Matrix() = default;
 
 		Matrix add(Matrix &other) {
+			if (this->height() == 1 && this->width() == 1) {
+				return other.add((*this)[0][0]);
+			}
+
+			if (other.height() == 1 && other.width() == 1) {
+				return add(other[0][0]);
+			}
+
 			Matrix sum(*this);
 
 			for (int i = 0; i < this->height(); i++) {
@@ -72,11 +80,21 @@ namespace linalg {
 		}
 
 		Matrix divide(Matrix other) {
+			if (other.height() == 1 && other.width() == 1) {
+				return divide(other[0][0]);
+			}
+
 			Matrix otherInverse = other.invert();
 			return multiply(otherInverse);
 		}
 
 		Matrix<T> multiply(Matrix<T> &other) {
+			if (other.height() == 1 && other.width() == 1) {
+				return multiply(other[0][0]);
+			} else if (this->height() == 1 && this->width() == 1) {
+				return other.multiply((*this)[0][0]);
+			}
+
 			auto height = this->height();
 			auto width = this->width();
 			auto otherHeight = other.height();
@@ -185,8 +203,11 @@ namespace linalg {
 		}
 
 		friend const Matrix<T> operator*(T scalar, Matrix<T> &matrix) {
-			Matrix scaled = matrix * scalar;
-			return scaled;
+			return matrix * scalar;
+		}
+
+		friend const Matrix<T> operator+(T scalar, Matrix<T> &matrix) {
+			return matrix + scalar;
 		}
 
 		virtual Matrix<T> operator*(Matrix<T> &other) {
