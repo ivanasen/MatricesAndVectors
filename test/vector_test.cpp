@@ -15,10 +15,10 @@ TEST(TestVector, ShouldNormalizeVectorCorrectly) {
 	ASSERT_EQ(normalised[2], 3 / magnitude);
 }
 
-TEST(TestVector, ShouldCalculateScalarProductCorrectly) {
+TEST(TestVector, ShouldCalculateDotProductCorrectly) {
 	linalg::Vector<double> vector1{3, 12, 12};
 	linalg::Vector<double> vector2{23, 1, 11};
-	double result = vector1.scalar(vector2);
+	double result = vector1.dot(vector2);
 	double expected = vector1[0] * vector2[0] +
 	                  vector1[1] * vector2[1] +
 	                  vector1[2] * vector2[2];
